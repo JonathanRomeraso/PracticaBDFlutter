@@ -97,6 +97,11 @@ class _CategoriasScreenState extends State<CategoriasScreen> {
   }
 
   Future<void> eliminarCategoria(int id) async {
+    await category.delete(id);
+    cargarCategorias();
+  }
+
+  Future<void> formEliminar(int id) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder:
@@ -120,10 +125,8 @@ class _CategoriasScreenState extends State<CategoriasScreen> {
             ],
           ),
     );
-
     if (confirm == true) {
-      await category.delete(id);
-      cargarCategorias();
+      eliminarCategoria(id);
     }
   }
 
@@ -131,15 +134,25 @@ class _CategoriasScreenState extends State<CategoriasScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Categorías'),
+        title: Center(
+          child: Text(
+            'Categorías',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
         actions: [
           IconButton(
-            icon: Icon(Icons.add),
+            padding: const EdgeInsets.only(right: 20),
+            icon: Icon(Icons.add_circle_outline, size: 35, color: Colors.green),
+            tooltip: 'Agregar Categoría',
             onPressed: () => mostrarFormulario(),
           ),
         ],
       ),
-      body: _listaProductosServicios(categorias),
+      body:
+          categorias.isEmpty
+              ? Center(child: Text('No hay productos o servicios'))
+              : _listaProductosServicios(categorias),
     );
   }
 
@@ -180,7 +193,7 @@ class _CategoriasScreenState extends State<CategoriasScreen> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () => eliminarCategoria(categoria.id!),
+                  onPressed: () => formEliminar(categoria.id!),
                 ),
               ],
             ),

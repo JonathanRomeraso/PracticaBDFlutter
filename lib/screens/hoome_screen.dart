@@ -32,7 +32,7 @@ class _HoomeScreenState extends State<HoomeScreen> {
               accountEmail: Text("Correo de Usuario"),
             ),
             ListTile(
-              leading: Icon(Icons.design_services),
+              leading: Icon(Icons.storage),
               title: Text("Categorías"),
               subtitle: Text("Ver y editar categorías"),
               trailing: GestureDetector(
@@ -42,7 +42,18 @@ class _HoomeScreenState extends State<HoomeScreen> {
                 child: Icon(Icons.chevron_right),
               ),
             ),
-            
+            const Divider(),
+            ListTile(
+              leading: Icon(Icons.shopping_cart_rounded),
+              title: Text("Bienes y Servicios"),
+              subtitle: Text("Ver y editar bienes y servicios"),
+              trailing: GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(context, "/bienes");
+                },
+                child: Icon(Icons.chevron_right),
+              ),
+            ),
           ],
         ),
       ),
