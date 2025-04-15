@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:practica_tres/screens/categorias_screen.dart';
+import 'package:practica_tres/screens/first_screen.dart';
+import 'package:practica_tres/screens/hoome_screen.dart';
+import 'package:practica_tres/screens/ventas_servicios_screen.dart';
 
 void main() => runApp(MyApp());
 
@@ -15,44 +19,15 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        home: GestureDetector(
-      onTap: () {
-        contador++;
-        print(contador);
-        setState(() {});
+      routes: {
+        "/ventasServicios": (context) => VentasServiciosScreen(),
+        "/categorias": (context) => CategoriasScreen(),
+        "/home": (context) => HoomeScreen(),
       },
-      child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: Color(0xffb74093),
-          title: Center(
-            child: Text(
-              'HOla MUndO :)',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'Swar',
-                fontSize: 30,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ),
-        floatingActionButton: FloatingActionButton(
-            child: Image.network(
-                'https://i0.wp.com/celaya.tecnm.mx/wp-content/uploads/2021/11/LOGO-LINCE-ITC-01.png'),
-            //child: Icon(Icons.plus_one_rounded),
-            //child: Center(child: Text('+', style: TextStyle(fontSize: 30),)),
-            onPressed: () {
-              contador++;
-              print(contador);
-              setState(() {});
-            }),
-        body: Center(
-          child: Text(
-            'Valor del Contador $contador',
-            style: TextStyle(fontSize: 20),
-          ),
-        ),
-      ),
-    ));
+      //theme: ThemeData.dark(),
+      // theme: ThemeSettings.purpleDarkTheme(),
+      title: 'Productos y Servicios',
+      home: FirstScreen(),
+    );
   }
 }

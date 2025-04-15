@@ -41,13 +41,14 @@ class ConnectionDatabase {
         fecha VARCHAR(10),
         estatus VARCHAR(10),
         recordatorio INTEGER, 
-        nombreCliente VARCHAR(150),
+        nombreCliente VARCHAR(150)
       )
     ''');
     await db.execute('''
       CREATE TABLE Categorias (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nombre VARCHAR(50),
+        type VARCHAR(10)
       )
     ''');
 

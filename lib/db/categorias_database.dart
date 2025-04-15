@@ -1,5 +1,6 @@
 import 'package:practica_tres/db/connection/connection_database.dart';
-import '../models/categoria.dart';
+import 'package:practica_tres/models/categoria.dart';
+
 
 class CategoriasDatabase {
   final db = ConnectionDatabase();
