@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:practica_tres/screens/bienes_screen.dart';
 import 'package:practica_tres/screens/categorias_screen.dart';
+//import 'package:practica_tres/screens/detalle_venta_screen.dart';
 import 'package:practica_tres/screens/first_screen.dart';
 import 'package:practica_tres/screens/hoome_screen.dart';
 import 'package:practica_tres/screens/ventas_servicios_screen.dart';
@@ -24,7 +25,7 @@ class _MyAppState extends State<MyApp> {
         "/ventasServicios": (context) => VentasServiciosScreen(),
         "/categorias": (context) => CategoriasScreen(),
         "/bienes": (context) => BienesScreen(),
-
+        //"/detalle": (context) => DetalleVentaScreen(),
         "/home": (context) => HoomeScreen(),
       },
       //theme: ThemeData.dark(),

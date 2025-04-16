@@ -4,6 +4,7 @@ import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:practica_tres/db/venta_servicio_database.dart';
 import 'package:practica_tres/models/ventas_servicio.dart';
+import 'package:practica_tres/screens/detalle_venta_screen.dart';
 
 class HoomeScreen extends StatefulWidget {
   const HoomeScreen({super.key});
@@ -188,7 +189,7 @@ class _HoomeScreenState extends State<HoomeScreen> {
                 },
                 child: Icon(Icons.chevron_right),
               ),
-            ),           
+            ),
           ],
         ),
       ),
@@ -260,6 +261,7 @@ class _HoomeScreenState extends State<HoomeScreen> {
       ventas: ventas,
       onEdit: (venta) => mostrarFormulario(venta: venta),
       onEstadoChange: cambiarEstado,
+      context: context,
     );
     return ConstrainedBox(
       constraints: BoxConstraints(maxHeight: 600),
@@ -342,6 +344,7 @@ class _HoomeScreenState extends State<HoomeScreen> {
                     ascending,
                   ),
             ),
+            DataColumn2(label: Center(child: Text('Ver')), fixedWidth: 60),
           ],
           source: source,
         ),
@@ -387,11 +390,14 @@ class VentasDataSource extends DataTableSource {
   final List<VentaServicio> ventas;
   final Function(VentaServicio venta) onEdit;
   final Function(VentaServicio venta, String estado) onEstadoChange;
+  final BuildContext context;
+  final repo = VentaServicioDatabase();
 
   VentasDataSource({
     required this.ventas,
     required this.onEdit,
     required this.onEstadoChange,
+    required this.context,
   });
 
   @override
@@ -436,6 +442,22 @@ class VentasDataSource extends DataTableSource {
         DataCell(Center(child: Text(venta.fecha.split('T').first))),
         DataCell(Center(child: Text(venta.descripcion))),
         DataCell(Center(child: Text(venta.nombreCliente))),
+        DataCell(
+          Center(
+            child: IconButton(
+              icon: Icon(Icons.remove_red_eye_rounded, color: Colors.blue[900]),
+              onPressed: () async {
+                final ver = venta.copyWith(id: venta.id);
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => DetalleVentaScreen(venta: ver),
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
       ],
     );
   }

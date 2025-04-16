@@ -1,5 +1,6 @@
 import 'package:practica_tres/db/connection/connection_database.dart';
 import 'package:practica_tres/models/detalle_venta_servicio.dart';
+import 'package:practica_tres/models/ventas_servicio.dart';
 
 class DetalleVentaServicioDatabase {
   final db = ConnectionDatabase();
@@ -40,5 +41,16 @@ class DetalleVentaServicioDatabase {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  Future<List<DetalleVentaServicio>> getByVentaId(int ventaId) async {
+    final con = await db.database;
+    final maps = await con.query(
+      'DetalleVentaServicio',
+      where: 'ventaServicioId = ?',
+      whereArgs: [ventaId],
+    );
+
+    return maps.map((map) => DetalleVentaServicio.fromMap(map)).toList();
   }
 }
