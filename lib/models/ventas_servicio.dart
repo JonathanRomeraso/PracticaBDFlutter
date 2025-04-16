@@ -26,7 +26,7 @@ class VentaServicio {
         fecha: cast['fecha'],
         estatus: cast['estatus'],
         recordatorio: cast['recordatorio'],
-        nombreCliente: cast['clienteNombre'],
+        nombreCliente: cast['nombreCliente'],
       );
 
   Map<String, dynamic> toMap() => {

@@ -146,14 +146,7 @@ class _HoomeScreenState extends State<HoomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Center(
-          child: Text(
-            "Productos y Servicios",
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ),
-      ),
+      appBar: AppBar(title: Text("Productos y Servicios")),
       drawer: Drawer(
         child: ListView(
           children: [
@@ -188,7 +181,7 @@ class _HoomeScreenState extends State<HoomeScreen> {
                 },
                 child: Icon(Icons.chevron_right),
               ),
-            ),           
+            ),
           ],
         ),
       ),
@@ -207,144 +200,154 @@ class _HoomeScreenState extends State<HoomeScreen> {
                       onPressed: () {
                         Navigator.pushNamed(context, "/ventasServicios");
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.purple.shade400,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 10,
-                        ),
-                      ),
-                      child: Text("Agregar Venta/Servicio"),
+                      child: Text("Ir a Ventas y Servicios"),
                     ),
                   ],
                 ),
               )
-              : Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ElevatedButton.icon(
-                      onPressed:
-                          () =>
-                              Navigator.pushNamed(context, "/ventasServicios"),
-                      icon: Icon(
-                        Icons.add_circle_sharp,
-                        color: Colors.purple[600],
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        elevation: 5,
-                        shadowColor: Colors.purple.shade400,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 10,
-                        ),
-                      ),
-                      label: Text(
-                        "Agregar Venta/Servicio",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Flexible(child: _dataTables()),
-                ],
-              ),
+              : Expanded(child: _dataTables()),
     );
   }
 
   Widget _dataTables() {
-    final source = VentasDataSource(
-      ventas: ventas,
-      onEdit: (venta) => mostrarFormulario(venta: venta),
-      onEstadoChange: cambiarEstado,
-    );
-    return ConstrainedBox(
-      constraints: BoxConstraints(maxHeight: 600),
-      child: Padding(
-        padding: const EdgeInsets.all(8),
-        child: PaginatedDataTable2(
-          headingRowColor: WidgetStateProperty.all(Colors.purple.shade400),
-          headingRowDecoration: BoxDecoration(
-            color: Colors.purple.shade400,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          border: TableBorder(
-            horizontalInside: BorderSide(
-              color: Colors.purple.shade100,
-              width: 1,
-            ),
-            verticalInside: BorderSide(color: Colors.purple.shade100, width: 1),
-          ),
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: DataTable2(
+        columnSpacing: 10,
+        minWidth: 900,
 
-          headingTextStyle: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
-          dataTextStyle: TextStyle(
-            color: Colors.black,
-            fontSize: 15,
-            fontFamily: 'Roboto',
-          ),
-
-          header: Text('Ventas y Servicios'),
-          rowsPerPage: 5,
-          renderEmptyRowsInTheEnd: true,
-
-          sortColumnIndex: _sortColumnIndex,
-          sortAscending: _sortAscending,
-          sortArrowIconColor: Colors.white,
-          sortArrowIcon: Icons.keyboard_arrow_up,
-
-          columnSpacing: 10,
-          minWidth: 1000,
-          dataRowHeight: 80,
-          columns: [
-            DataColumn2(label: Center(child: Text('Editar')), fixedWidth: 60),
-            DataColumn2(label: Center(child: Text('Estado')), fixedWidth: 60),
-            DataColumn(
-              label: Center(child: Text('Título')),
-              onSort:
-                  (columnIndex, ascending) => _ordenar(
-                    (venta) => venta.titulo.toLowerCase(),
-                    columnIndex,
-                    ascending,
-                  ),
-            ),
-            DataColumn(
-              label: Center(child: Text('Estado')),
-              onSort:
-                  (columnIndex, ascending) => _ordenar(
-                    (venta) => venta.estatus.toLowerCase(),
-                    columnIndex,
-                    ascending,
-                  ),
-            ),
-            DataColumn(
-              label: Center(child: Text('Fecha')),
-              onSort:
-                  (columnIndex, ascending) => _ordenar(
-                    (venta) => DateTime.parse(venta.fecha),
-                    columnIndex,
-                    ascending,
-                  ),
-            ),
-            DataColumn(label: Center(child: Text('Descripción'))),
-            DataColumn(
-              label: Center(child: Text('Cliente')),
-              onSort:
-                  (columnIndex, ascending) => _ordenar(
-                    (venta) => venta.nombreCliente.toLowerCase(),
-                    columnIndex,
-                    ascending,
-                  ),
-            ),
-          ],
-          source: source,
+        //dataRowHeight: 56,
+        headingRowColor: WidgetStateProperty.all(Colors.purple.shade400),
+        dataRowColor: WidgetStateProperty.all(Colors.white),
+        border: TableBorder(
+          horizontalInside: BorderSide(color: Colors.purple.shade400),
+          verticalInside: BorderSide(color: Colors.purple.shade400),
         ),
+
+        headingTextStyle: TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+        ),
+        dataTextStyle: TextStyle(
+          color: Colors.black,
+          fontSize: 14,
+          fontFamily: 'Roboto',
+        ),
+        headingCheckboxTheme: const CheckboxThemeData(
+          side: BorderSide(color: Colors.white, width: 2.0),
+        ),
+
+        sortColumnIndex: _sortColumnIndex,
+        sortAscending: _sortAscending,
+        sortArrowIconColor: Colors.white,
+        sortArrowIcon: Icons.keyboard_arrow_up,
+
+        showCheckboxColumn: true,
+        showBottomBorder: true,
+
+
+        columns: [
+          DataColumn2(label: Center(child: Text('Editar')), fixedWidth: 60),
+          DataColumn2(label: Center(child: Text('Estado')), fixedWidth: 60),
+          DataColumn(
+            label: Center(child: Text('Título')),
+            onSort:
+                (columnIndex, ascending) => _ordenar(
+                  (venta) => venta.titulo.toLowerCase(),
+                  columnIndex,
+                  ascending,
+                ),
+          ),
+          DataColumn(
+            label: Center(child: Text('Estado')),
+            onSort:
+                (columnIndex, ascending) => _ordenar(
+                  (venta) => venta.estatus.toLowerCase(),
+                  columnIndex,
+                  ascending,
+                ),
+          ),
+          DataColumn(
+            label: Center(child: Text('Fecha')),
+            onSort:
+                (columnIndex, ascending) => _ordenar(
+                  (venta) => DateTime.parse(venta.fecha),
+                  columnIndex,
+                  ascending,
+                ),
+          ),
+          DataColumn(label: Center(child: Text('Descripción'))),
+          DataColumn(
+            label: Center(child: Text('Cliente')),
+            onSort:
+                (columnIndex, ascending) => _ordenar(
+                  (venta) => venta.nombreCliente.toLowerCase(),
+                  columnIndex,
+                  ascending,
+                ),
+          ),
+          //DataColumn(label: Center(child: Text('Recordatorio'))),
+        ],
+        rows:
+            ventas.map((venta) {
+              return DataRow(
+                color: WidgetStateProperty.resolveWith((states) {
+                  return _getRowColor(venta.estatus);
+                }),
+                cells: [
+                  DataCell(
+                    Center(
+                      child: IconButton(
+                        icon: Icon(Icons.edit, color: Colors.orange),
+                        onPressed: () => mostrarFormulario(venta: venta),
+                      ),
+                    ),
+                  ),
+                  DataCell(
+                    Center(
+                      child: PopupMenuButton<String>(
+                        icon: Icon(Icons.sync),
+                        onSelected: (estado) => cambiarEstado(venta, estado),
+                        itemBuilder:
+                            (_) => [
+                              PopupMenuItem(
+                                value: 'Por Cumplir',
+                                child: Text('Por Cumplir'),
+                              ),
+                              PopupMenuItem(
+                                value: 'Completado',
+                                child: Text('Completado'),
+                              ),
+                              PopupMenuItem(
+                                value: 'Cancelado',
+                                child: Text('Cancelado'),
+                              ),
+                            ],
+                      ),
+                    ),
+                  ),
+                  DataCell(Center(child: Text(venta.titulo))),
+                  DataCell(
+                    Center(
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: buildStatusRow(venta.estatus),
+                      ),
+                    ),
+                  ),
+                  DataCell(Center(child: Text(venta.fecha.split('T').first))),
+                  DataCell(Center(child: Text(venta.descripcion))),
+                  DataCell(Center(child: Text(venta.nombreCliente))),
+                ],
+              );
+            }).toList(),     
       ),
     );
   }
@@ -366,78 +369,6 @@ class _HoomeScreenState extends State<HoomeScreen> {
       _sortColumnIndex = columnIndex;
       _sortAscending = ascending;
     });
-  }
-}
-
-class StatusData {
-  final Color color;
-  final IconData icon;
-  final Color textColor;
-  final bool hasBorder;
-
-  StatusData({
-    required this.color,
-    required this.icon,
-    required this.textColor,
-    this.hasBorder = false,
-  });
-}
-
-class VentasDataSource extends DataTableSource {
-  final List<VentaServicio> ventas;
-  final Function(VentaServicio venta) onEdit;
-  final Function(VentaServicio venta, String estado) onEstadoChange;
-
-  VentasDataSource({
-    required this.ventas,
-    required this.onEdit,
-    required this.onEstadoChange,
-  });
-
-  @override
-  DataRow? getRow(int index) {
-    if (index >= ventas.length) return null;
-    final venta = ventas[index];
-
-    return DataRow.byIndex(
-      index: index,
-      color: WidgetStateProperty.all(_getRowColor(venta.estatus)),
-      cells: [
-        DataCell(
-          Center(
-            child: IconButton(
-              icon: Icon(Icons.edit, color: Colors.orange),
-              onPressed: () => onEdit(venta),
-            ),
-          ),
-        ),
-        DataCell(
-          Center(
-            child: PopupMenuButton<String>(
-              icon: Icon(Icons.sync),
-              onSelected: (estado) => onEstadoChange(venta, estado),
-              itemBuilder:
-                  (_) => [
-                    PopupMenuItem(
-                      value: 'Por Cumplir',
-                      child: Text('Por Cumplir'),
-                    ),
-                    PopupMenuItem(
-                      value: 'Completado',
-                      child: Text('Completado'),
-                    ),
-                    PopupMenuItem(value: 'Cancelado', child: Text('Cancelado')),
-                  ],
-            ),
-          ),
-        ),
-        DataCell(Center(child: Text(venta.titulo))),
-        DataCell(Center(child: buildStatusRow(venta.estatus))),
-        DataCell(Center(child: Text(venta.fecha.split('T').first))),
-        DataCell(Center(child: Text(venta.descripcion))),
-        DataCell(Center(child: Text(venta.nombreCliente))),
-      ],
-    );
   }
 
   Widget buildStatusRow(String estatus) {
@@ -517,13 +448,19 @@ class VentasDataSource extends DataTableSource {
         return Colors.white;
     }
   }
-
-  @override
-  bool get isRowCountApproximate => false;
-
-  @override
-  int get rowCount => ventas.length;
-
-  @override
-  int get selectedRowCount => 0;
 }
+
+class StatusData {
+  final Color color;
+  final IconData icon;
+  final Color textColor;
+  final bool hasBorder;
+
+  StatusData({
+    required this.color,
+    required this.icon,
+    required this.textColor,
+    this.hasBorder = false,
+  });
+}
+
