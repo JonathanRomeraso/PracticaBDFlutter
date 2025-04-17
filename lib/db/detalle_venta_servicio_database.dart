@@ -1,6 +1,5 @@
 import 'package:practica_tres/db/connection/connection_database.dart';
 import 'package:practica_tres/models/detalle_venta_servicio.dart';
-import 'package:practica_tres/models/ventas_servicio.dart';
 
 class DetalleVentaServicioDatabase {
   final db = ConnectionDatabase();

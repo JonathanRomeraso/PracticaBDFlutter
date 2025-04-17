@@ -199,7 +199,7 @@ class _DetalleVentaScreenState extends State<DetalleVentaScreen> {
         if (didPop) return;
         final salir = await confirmarSalida(context, idsTemporales);
         if (salir) {
-          Navigator.of(context).pop();
+          Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
         }
       },
       child: Scaffold(
@@ -219,7 +219,7 @@ class _DetalleVentaScreenState extends State<DetalleVentaScreen> {
           ),
           actions: [
             Padding(
-              padding: const EdgeInsets.only(right: 12),
+              padding: const EdgeInsets.only(right: 20),
               child: badges.Badge(
                 position: badges.BadgePosition.topEnd(top: -6, end: -4),
                 badgeStyle: badges.BadgeStyle(

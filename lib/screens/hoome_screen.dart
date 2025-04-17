@@ -4,7 +4,9 @@ import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:practica_tres/db/venta_servicio_database.dart';
 import 'package:practica_tres/models/ventas_servicio.dart';
-import 'package:practica_tres/screens/detalle_venta_screen.dart';
+import 'package:practica_tres/views/form_eliminar.dart';
+import 'package:practica_tres/views/home/ventas_data_source.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 class HoomeScreen extends StatefulWidget {
   const HoomeScreen({super.key});
@@ -18,6 +20,15 @@ class _HoomeScreenState extends State<HoomeScreen> {
   List<VentaServicio> ventas = [];
   int? _sortColumnIndex;
   bool _sortAscending = true;
+  List<VentaServicio> todasLasVentas = [];
+
+  String? _estadoSeleccionado;
+  final List<String> _estados = [
+    'Todos',
+    'Por cumplir',
+    'Cancelada',
+    'Completada',
+  ];
 
   @override
   void initState() {
@@ -28,7 +39,25 @@ class _HoomeScreenState extends State<HoomeScreen> {
   Future<void> cargarVentas() async {
     final data = await repo.select();
     setState(() {
-      ventas = data;
+      todasLasVentas = data;
+      aplicarFiltro();
+    });
+  }
+
+  void aplicarFiltro() {
+    setState(() {
+      if (_estadoSeleccionado == null || _estadoSeleccionado == 'Todos') {
+        ventas = todasLasVentas;
+      } else {
+        ventas =
+            todasLasVentas
+                .where(
+                  (venta) =>
+                      venta.estatus.toLowerCase() ==
+                      _estadoSeleccionado!.toLowerCase(),
+                )
+                .toList();
+      }
     });
   }
 
@@ -140,8 +169,331 @@ class _HoomeScreenState extends State<HoomeScreen> {
   }
 
   Future<void> eliminarVenta(int id) async {
-    await repo.delete(id);
-    cargarVentas();
+    if (await formEliminar(context, "esta Venta/Servicio")) {
+      await repo.delete(id);
+      cargarVentas();
+    }
+  }
+
+  Map<DateTime, List<VentaServicio>> eventosPorFecha() {
+    final Map<DateTime, List<VentaServicio>> mapa = {};
+
+    for (var venta in ventas) {
+      final fecha = DateTime.parse(venta.fecha);
+      final soloFecha = DateTime(fecha.year, fecha.month, fecha.day);
+      mapa.putIfAbsent(soloFecha, () => []).add(venta);
+    }
+
+    return mapa;
+  }
+
+  Widget _buildCalendario() {
+    final eventos = eventosPorFecha();
+    return TableCalendar(
+      onFormatChanged: (format) {},
+      //weekNumbersVisible: false,
+      headerStyle: HeaderStyle(formatButtonVisible: false),
+      firstDay: DateTime.utc(2000, 1, 1),
+      lastDay: DateTime.utc(2100, 12, 31),
+      focusedDay: DateTime.now(),
+      eventLoader:
+          (day) => eventos[DateTime(day.year, day.month, day.day)] ?? [],
+      calendarBuilders: CalendarBuilders(
+        markerBuilder: (context, date, eventosDelDia) {
+          if (eventosDelDia.isEmpty) return null;
+          const maxVisible = 4;
+          final visibles =
+              eventosDelDia.length > maxVisible
+                  ? eventosDelDia.take(maxVisible - 1).toList()
+                  : eventosDelDia;
+
+          final restantes = eventosDelDia.length - visibles.length;
+          return Padding(
+            padding: const EdgeInsets.only(top: 4.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ...visibles.map((evento) {
+                  final venta = evento as VentaServicio;
+                  Color color;
+                  switch (venta.estatus.toLowerCase()) {
+                    case 'por cumplir':
+                      color = Colors.green;
+                      break;
+                    case 'cancelada':
+                      color = Colors.red;
+                      break;
+                    case 'completada':
+                      color = Colors.white;
+                      break;
+                    default:
+                      color = Colors.grey;
+                  }
+                  return Container(
+                    width: 8,
+                    height: 8,
+                    margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: color,
+                      border: Border.all(
+                        color:
+                            color == Colors.white
+                                ? Colors.black
+                                : Colors.transparent,
+                        width: 1.2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: color.withValues(alpha: .3),
+                          blurRadius: 2,
+                          offset: Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+                // Marcador +X
+                if (restantes > 0)
+                  Container(
+                    width: 18,
+                    height: 18,
+                    margin: const EdgeInsets.only(left: 4.0),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.deepPurple.shade600,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.deepPurple.shade900,
+                          blurRadius: 4,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      '+$restantes',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          );
+        },
+      ),
+      onDaySelected: (selectedDay, focusedDay) {
+        final eventosDelDia =
+            eventos[DateTime(
+              selectedDay.year,
+              selectedDay.month,
+              selectedDay.day,
+            )] ??
+            [];
+        _mostrarModalEventos(context, selectedDay, eventosDelDia);
+      },
+    );
+  }
+
+  void _mostrarCalendarioEnModal() {
+    showDialog(
+      context: context,
+      builder:
+          (context) => Dialog(
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 24,
+            ),
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.deepPurple,
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(16),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      const Text(
+                        'Calendario de Ventas/Servicios',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: _buildCalendario(),
+                ),
+              ],
+            ),
+          ),
+    );
+  }
+
+  void _mostrarModalEventos(
+    BuildContext context,
+    DateTime fecha,
+    List<VentaServicio> eventos,
+  ) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder:
+          (_) => Dialog(
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 24,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Encabezado
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.deepPurple,
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(16),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Eventos del ${fecha.toLocal().toString().split(' ')[0]}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Cuerpo del modal
+                Container(
+                  constraints: const BoxConstraints(maxHeight: 400),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  child:
+                      eventos.isEmpty
+                          ? const Padding(
+                            padding: EdgeInsets.all(20.0),
+                            child: Center(
+                              child: Text(
+                                "No hay eventos.",
+                                style: TextStyle(fontSize: 16),
+                              ),
+                            ),
+                          )
+                          : ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: eventos.length,
+                            itemBuilder: (_, index) {
+                              final e = eventos[index];
+
+                              // Colores según estatus
+                              Color statusColor;
+                              IconData icon;
+                              switch (e.estatus.toLowerCase()) {
+                                case 'por cumplir':
+                                  statusColor = Colors.green;
+                                  icon = Icons.schedule;
+                                  break;
+                                case 'cancelada':
+                                  statusColor = Colors.red;
+                                  icon = Icons.cancel;
+                                  break;
+                                case 'completada':
+                                  statusColor = Colors.blueGrey;
+                                  icon = Icons.check_circle;
+                                  break;
+                                default:
+                                  statusColor = Colors.grey;
+                                  icon = Icons.info_outline;
+                              }
+
+                              return Card(
+                                elevation: 2,
+                                margin: const EdgeInsets.symmetric(vertical: 6),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: ListTile(
+                                  leading: Icon(icon, color: statusColor),
+                                  title: Text(
+                                    e.titulo,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  subtitle: Text(e.descripcion),
+                                  trailing: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: statusColor.withValues(alpha: 50),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: statusColor),
+                                    ),
+                                    child: Text(
+                                      e.estatus,
+                                      style: TextStyle(
+                                        color: statusColor,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                ),
+              ],
+            ),
+          ),
+    );
   }
 
   @override
@@ -196,60 +548,174 @@ class _HoomeScreenState extends State<HoomeScreen> {
       body:
           ventas.isEmpty
               ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Bienvenido a la App de Productos y Servicios",
-                      style: TextStyle(fontSize: 20),
-                    ),
-                    SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, "/ventasServicios");
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.purple.shade400,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 10,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.shopping_bag_outlined,
+                        size: 64,
+                        color: Colors.purple.shade300,
+                      ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        "Bienvenido a la App de Productos y Servicios",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
                         ),
                       ),
-                      child: Text("Agregar Venta/Servicio"),
-                    ),
-                  ],
+                      const SizedBox(height: 20),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pushNamed(context, "/ventasServicios");
+                        },
+                        icon: const Icon(
+                          Icons.add_circle_outline,
+                          color: Colors.white,
+                        ),
+                        label: const Text(
+                          "Agregar Venta/Servicio",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.purple.shade500,
+                          elevation: 5,
+                          shadowColor: Colors.purple.shade200,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               )
               : Column(
                 children: [
+                  // Botón para ver calendario
                   Padding(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: ElevatedButton.icon(
+                      onPressed: _mostrarCalendarioEnModal,
+                      icon: const Icon(
+                        Icons.calendar_month,
+                        color: Colors.white,
+                      ),
+                      label: const Text(
+                        "Ver Calendario",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurple,
+                        elevation: 6,
+                        shadowColor: Colors.deepPurpleAccent,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Botón para agregar venta/servicio
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: ElevatedButton.icon(
                       onPressed:
                           () =>
                               Navigator.pushNamed(context, "/ventasServicios"),
                       icon: Icon(
                         Icons.add_circle_sharp,
-                        color: Colors.purple[600],
+                        color: Colors.purple.shade600,
+                      ),
+                      label: const Text(
+                        "Agregar Venta/Servicio",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black87,
+                        ),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
-                        elevation: 5,
-                        shadowColor: Colors.purple.shade400,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 10,
+                        elevation: 6,
+                        shadowColor: Colors.purple.shade200,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
                         ),
-                      ),
-                      label: Text(
-                        "Agregar Venta/Servicio",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(color: Colors.purple.shade200),
                         ),
                       ),
                     ),
                   ),
+
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 250),
+                      child: DropdownButtonFormField<String>(
+                        value: _estadoSeleccionado ?? 'Todos',
+                        decoration: InputDecoration(
+                          labelText: 'Filtrar por estado',
+                          labelStyle: const TextStyle(
+                            color: Colors.purple,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          filled: true,
+                          fillColor: Colors.grey.shade100,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: Colors.purple.shade300,
+                            ),
+                          ),
+                        ),
+                        items:
+                            _estados.map((estado) {
+                              return DropdownMenuItem<String>(
+                                value: estado,
+                                child: Text(
+                                  estado,
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                              );
+                            }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _estadoSeleccionado = value;
+                            aplicarFiltro();
+                          });
+                        },
+                        dropdownColor: Colors.white,
+                        icon: Icon(Icons.arrow_drop_down, color: Colors.purple),
+                      ),
+                    ),
+                  ),
+
                   Flexible(child: _dataTables()),
                 ],
               ),
@@ -260,6 +726,7 @@ class _HoomeScreenState extends State<HoomeScreen> {
     final source = VentasDataSource(
       ventas: ventas,
       onEdit: (venta) => mostrarFormulario(venta: venta),
+      onDelete: (venta) => eliminarVenta(venta.id!),
       onEstadoChange: cambiarEstado,
       context: context,
     );
@@ -345,6 +812,7 @@ class _HoomeScreenState extends State<HoomeScreen> {
                   ),
             ),
             DataColumn2(label: Center(child: Text('Ver')), fixedWidth: 60),
+            DataColumn2(label: Center(child: Text('Eliminar')), fixedWidth: 60),
           ],
           source: source,
         ),
@@ -370,182 +838,4 @@ class _HoomeScreenState extends State<HoomeScreen> {
       _sortAscending = ascending;
     });
   }
-}
-
-class StatusData {
-  final Color color;
-  final IconData icon;
-  final Color textColor;
-  final bool hasBorder;
-
-  StatusData({
-    required this.color,
-    required this.icon,
-    required this.textColor,
-    this.hasBorder = false,
-  });
-}
-
-class VentasDataSource extends DataTableSource {
-  final List<VentaServicio> ventas;
-  final Function(VentaServicio venta) onEdit;
-  final Function(VentaServicio venta, String estado) onEstadoChange;
-  final BuildContext context;
-  final repo = VentaServicioDatabase();
-
-  VentasDataSource({
-    required this.ventas,
-    required this.onEdit,
-    required this.onEstadoChange,
-    required this.context,
-  });
-
-  @override
-  DataRow? getRow(int index) {
-    if (index >= ventas.length) return null;
-    final venta = ventas[index];
-
-    return DataRow.byIndex(
-      index: index,
-      color: WidgetStateProperty.all(_getRowColor(venta.estatus)),
-      cells: [
-        DataCell(
-          Center(
-            child: IconButton(
-              icon: Icon(Icons.edit, color: Colors.orange),
-              onPressed: () => onEdit(venta),
-            ),
-          ),
-        ),
-        DataCell(
-          Center(
-            child: PopupMenuButton<String>(
-              icon: Icon(Icons.sync),
-              onSelected: (estado) => onEstadoChange(venta, estado),
-              itemBuilder:
-                  (_) => [
-                    PopupMenuItem(
-                      value: 'Por Cumplir',
-                      child: Text('Por Cumplir'),
-                    ),
-                    PopupMenuItem(
-                      value: 'Completada',
-                      child: Text('Completada'),
-                    ),
-                    PopupMenuItem(value: 'Cancelada', child: Text('Cancelada')),
-                  ],
-            ),
-          ),
-        ),
-        DataCell(Center(child: Text(venta.titulo))),
-        DataCell(Center(child: buildStatusRow(venta.estatus))),
-        DataCell(Center(child: Text(venta.fecha.split('T').first))),
-        DataCell(Center(child: Text(venta.descripcion))),
-        DataCell(Center(child: Text(venta.nombreCliente))),
-        DataCell(
-          Center(
-            child: IconButton(
-              icon: Icon(Icons.remove_red_eye_rounded, color: Colors.blue[900]),
-              onPressed: () async {
-                final ver = venta.copyWith(id: venta.id);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => DetalleVentaScreen(venta: ver),
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget buildStatusRow(String estatus) {
-    final statusData = _getStatusData(estatus);
-    return SizedBox(
-      height: 32,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          color: statusData.color,
-          borderRadius: BorderRadius.circular(12),
-          border:
-              statusData.hasBorder
-                  ? Border.all(color: Colors.grey.shade300)
-                  : null,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(statusData.icon, size: 16, color: statusData.textColor),
-            const SizedBox(width: 4),
-            Text(
-              estatus.toUpperCase(),
-              style: TextStyle(
-                color: statusData.textColor,
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  StatusData _getStatusData(String estatus) {
-    final lowerEstatus = estatus.toLowerCase();
-
-    switch (lowerEstatus) {
-      case 'por cumplir':
-        return StatusData(
-          color: Colors.green.shade700,
-          icon: Icons.access_time,
-          textColor: Colors.white,
-        );
-      case 'completada':
-        return StatusData(
-          color: Colors.white,
-          icon: Icons.check_circle,
-          textColor: Colors.black,
-          hasBorder: true,
-        );
-      case 'cancelada':
-        return StatusData(
-          color: Colors.red.shade700,
-          icon: Icons.cancel,
-          textColor: Colors.white,
-        );
-      default:
-        return StatusData(
-          color: Colors.grey,
-          icon: Icons.help_outline,
-          textColor: Colors.white,
-        );
-    }
-  }
-
-  Color _getRowColor(String estatus) {
-    switch (estatus.toLowerCase()) {
-      case 'completado':
-        return Colors.grey[200]!;
-      case 'cancelado':
-        return Colors.red[100]!;
-      case 'por cumplir':
-        return Colors.green[100]!;
-      default:
-        return Colors.white;
-    }
-  }
-
-  @override
-  bool get isRowCountApproximate => false;
-
-  @override
-  int get rowCount => ventas.length;
-
-  @override
-  int get selectedRowCount => 0;
 }
