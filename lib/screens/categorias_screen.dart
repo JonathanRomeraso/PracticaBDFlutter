@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'package:practica_tres/db/categorias_database.dart';
 import 'package:practica_tres/models/categoria.dart';
+import 'package:practica_tres/views/form_eliminar.dart';
 
 class CategoriasScreen extends StatefulWidget {
   const CategoriasScreen({super.key});
@@ -97,36 +98,9 @@ class _CategoriasScreenState extends State<CategoriasScreen> {
   }
 
   Future<void> eliminarCategoria(int id) async {
-    await category.delete(id);
-    cargarCategorias();
-  }
-
-  Future<void> formEliminar(int id) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Confirmar eliminación'),
-            content: const Text(
-              '¿Estás seguro de que deseas eliminar esta categoría?',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancelar'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text(
-                  'Eliminar',
-                  style: TextStyle(color: Colors.red),
-                ),
-              ),
-            ],
-          ),
-    );
-    if (confirm == true) {
-      eliminarCategoria(id);
+    if (await formEliminar(context, "esta Categoría")) {
+      await category.delete(id);
+      cargarCategorias();
     }
   }
 
@@ -193,7 +167,7 @@ class _CategoriasScreenState extends State<CategoriasScreen> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () => formEliminar(categoria.id!),
+                  onPressed: () => eliminarCategoria(categoria.id!),
                 ),
               ],
             ),

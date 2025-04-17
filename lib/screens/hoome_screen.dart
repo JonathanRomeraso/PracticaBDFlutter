@@ -429,10 +429,10 @@ class VentasDataSource extends DataTableSource {
                       child: Text('Por Cumplir'),
                     ),
                     PopupMenuItem(
-                      value: 'Completado',
-                      child: Text('Completado'),
+                      value: 'Completada',
+                      child: Text('Completada'),
                     ),
-                    PopupMenuItem(value: 'Cancelado', child: Text('Cancelado')),
+                    PopupMenuItem(value: 'Cancelada', child: Text('Cancelada')),
                   ],
             ),
           ),
@@ -505,14 +505,14 @@ class VentasDataSource extends DataTableSource {
           icon: Icons.access_time,
           textColor: Colors.white,
         );
-      case 'completado':
+      case 'completada':
         return StatusData(
           color: Colors.white,
           icon: Icons.check_circle,
           textColor: Colors.black,
           hasBorder: true,
         );
-      case 'cancelado':
+      case 'cancelada':
         return StatusData(
           color: Colors.red.shade700,
           icon: Icons.cancel,
