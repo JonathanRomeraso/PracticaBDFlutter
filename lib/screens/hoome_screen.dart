@@ -448,7 +448,7 @@ class VentasDataSource extends DataTableSource {
               icon: Icon(Icons.remove_red_eye_rounded, color: Colors.blue[900]),
               onPressed: () async {
                 final ver = venta.copyWith(id: venta.id);
-                Navigator.pushReplacement(
+                Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (_) => DetalleVentaScreen(venta: ver),
