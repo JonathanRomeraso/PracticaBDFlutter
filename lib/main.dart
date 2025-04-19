@@ -5,8 +5,14 @@ import 'package:practica_tres/screens/categorias_screen.dart';
 import 'package:practica_tres/screens/first_screen.dart';
 import 'package:practica_tres/screens/hoome_screen.dart';
 import 'package:practica_tres/screens/ventas_servicios_screen.dart';
+import 'package:practica_tres/services/notification_service.dart';
 
-void main() => runApp(MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await requestNotificationPermission();
+  await initializeNotifications();
+  runApp(const MyApp());
+}
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});

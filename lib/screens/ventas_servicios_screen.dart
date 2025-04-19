@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:practica_tres/db/venta_servicio_database.dart';
 import 'package:practica_tres/models/ventas_servicio.dart';
 import 'package:practica_tres/screens/detalle_venta_screen.dart';
+import 'package:practica_tres/services/notification_service.dart';
 
 class VentasServiciosScreen extends StatefulWidget {
   const VentasServiciosScreen({super.key});
@@ -33,6 +34,23 @@ class _VentasServiciosScreenState extends State<VentasServiciosScreen> {
       //await repo.insert(nuevaVenta.toMap());
       final id = await repo.insert(nuevaVenta.toMap());
       final ventaInsertada = nuevaVenta.copyWith(id: id);
+      DateTime recordatorio2DiasAntes = DateTime(
+        fecha!.year,
+        fecha!.month,
+        fecha!.day - 2,
+        DateTime.now().hour,
+        DateTime.now().minute + 1,
+        DateTime.now().second + 5,
+      );
+
+      if (recordatorio2DiasAntes.isAfter(DateTime.now())) {
+        await scheduleNotification(
+          recordatorio2DiasAntes,
+          'Recordatorio: ${tituloController.text.trim()}',
+          'Cliente: ${clienteController.text.trim()}',
+        );
+      }
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(

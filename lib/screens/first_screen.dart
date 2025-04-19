@@ -8,11 +8,14 @@ class FirstScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Center(
-          child: const Text('Productos y Servicios', style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
-            fontFamily: 'Roboto',
-          )),
+          child: const Text(
+            'Productos y Servicios',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
+              fontFamily: 'Roboto',
+            ),
+          ),
         ),
       ),
       body: Center(
@@ -25,7 +28,7 @@ class FirstScreen extends StatelessWidget {
                   context: context,
                   builder: (BuildContext context) {
                     Future.delayed(Duration(seconds: 2), () {
-                      Navigator.of(context).pop(); // Close the dialog
+                      Navigator.of(context).pop();
                       Navigator.pushNamed(context, '/home');
                     });
                     return Center(child: CircularProgressIndicator());

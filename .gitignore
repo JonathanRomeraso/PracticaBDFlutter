@@ -47,6 +47,7 @@ app.*.map.json
 
 # Ignorar las carpetas de compilación específicas de cada plataforma
 /android/
+/androidBK/
 /ios/
 /linux/
 /macos/
