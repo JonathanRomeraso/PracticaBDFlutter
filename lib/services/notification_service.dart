@@ -45,21 +45,38 @@ Future<void> showNotification() async {
   );
 }
 
-Future<void> scheduleNotification(
+Future<void> notificationProgramada(
   DateTime fechaHora,
   String titulo,
   String mensaje,
+  String nombreCliente,
+  String fechaServicio,
 ) async {
+  final BigTextStyleInformation bigTextStyleInformation =
+      BigTextStyleInformation(
+        '''
+        <b>El servicio con titulo $nombreCliente</b>,<br><br>
+        con descripción: $mensaje<br><br>
+        <i>Fecha del servicio:</i> <b>$fechaServicio</b><br><br>        ''',
+        htmlFormatBigText: true,
+        contentTitle: '<b>$titulo</b>',
+        htmlFormatContentTitle: true,
+        summaryText: 'Recordatorio de servicio',
+        htmlFormatSummaryText: true,
+      );
   await flutterLocalNotificationsPlugin.zonedSchedule(
     0,
     titulo,
-    mensaje,
+    "Fecha Servicio: $fechaServicio",
     tz.TZDateTime.from(fechaHora, tz.local),
-    const NotificationDetails(
+    NotificationDetails(
       android: AndroidNotificationDetails(
         'your channel id',
         'your channel name',
         channelDescription: 'your channel description',
+        styleInformation: bigTextStyleInformation,
+        importance: Importance.max,
+        priority: Priority.high,
       ),
     ),
     androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,

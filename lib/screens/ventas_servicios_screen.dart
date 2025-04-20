@@ -44,10 +44,12 @@ class _VentasServiciosScreenState extends State<VentasServiciosScreen> {
       );
 
       if (recordatorio2DiasAntes.isAfter(DateTime.now())) {
-        await scheduleNotification(
+        await notificationProgramada(
           recordatorio2DiasAntes,
-          'Recordatorio: ${tituloController.text.trim()}',
-          'Cliente: ${clienteController.text.trim()}',
+          tituloController.text.trim(),
+          descripcionController.text.trim(),
+          clienteController.text.trim(),
+          '${fecha?.toLocal().toString().split(' ')[0]}',
         );
       }
 
