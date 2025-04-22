@@ -45,7 +45,7 @@ class VentasDataSource extends DataTableSource {
               itemBuilder:
                   (_) => [
                     PopupMenuItem(
-                      value: 'Por Cumplir',
+                      value: 'Por cumplir',
                       child: Text('Por Cumplir'),
                     ),
                     PopupMenuItem(

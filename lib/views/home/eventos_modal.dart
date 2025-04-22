@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:practica_tres/models/ventas_servicio.dart';
+import 'package:practica_tres/screens/detalle_venta_screen.dart';
 
 class EventosModal extends StatelessWidget {
   final DateTime fecha;
@@ -83,37 +84,48 @@ class EventosModal extends StatelessWidget {
                             icon = Icons.info_outline;
                         }
 
-                        return Card(
-                          elevation: 2,
-                          margin: const EdgeInsets.symmetric(vertical: 6),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: ListTile(
-                            leading: Icon(icon, color: statusColor),
-                            title: Text(
-                              e.titulo,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
+                        return GestureDetector(
+                          onTap: () async {
+                            final ver = e.copyWith(id: e.id);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => DetalleVentaScreen(venta: ver),
                               ),
+                            );
+                          },
+                          child: Card(
+                            elevation: 2,
+                            margin: const EdgeInsets.symmetric(vertical: 6),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            subtitle: Text(e.descripcion),
-                            trailing: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
+                            child: ListTile(
+                              leading: Icon(icon, color: statusColor),
+                              title: Text(
+                                e.titulo,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                              decoration: BoxDecoration(
-                                color: statusColor.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: statusColor),
-                              ),
-                              child: Text(
-                                e.estatus,
-                                style: TextStyle(
-                                  color: statusColor,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 12,
+                              subtitle: Text(e.descripcion),
+                              trailing: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: statusColor.withValues(alpha: .1),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: statusColor),
+                                ),
+                                child: Text(
+                                  e.estatus,
+                                  style: TextStyle(
+                                    color: statusColor,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ),
                             ),

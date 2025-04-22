@@ -121,7 +121,7 @@ class _VentaFormDialogState extends State<VentaFormDialog> {
                 fecha:
                     fecha?.toIso8601String() ??
                     DateTime.now().toIso8601String(),
-                estatus: widget.venta?.estatus ?? 'Por Cumplir',
+                estatus: widget.venta?.estatus ?? 'Por cumplir',
               );
 
               widget.onSubmit(nueva);

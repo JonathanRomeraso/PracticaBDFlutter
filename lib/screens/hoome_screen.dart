@@ -172,8 +172,8 @@ class _HoomeScreenState extends State<HoomeScreen> {
                   "https://www.w3schools.com/howto/img_avatar.png",
                 ),
               ),
-              accountName: Text("Nombre de Usuario"),
-              accountEmail: Text("Correo de Usuario"),
+              accountName: Text("Jonathan Rodriguez"),
+              accountEmail: Text("21030021@itcelaya.edu.mx"),
             ),
             ListTile(
               leading: Icon(Icons.storage),

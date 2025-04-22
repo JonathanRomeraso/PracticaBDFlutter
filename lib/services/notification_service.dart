@@ -55,9 +55,9 @@ Future<void> notificationProgramada(
   final BigTextStyleInformation bigTextStyleInformation =
       BigTextStyleInformation(
         '''
-        <b>El servicio con titulo $nombreCliente</b>,<br><br>
+        <b>El servicio para:  $nombreCliente</b>,<br><br>
         con descripción: $mensaje<br><br>
-        <i>Fecha del servicio:</i> <b>$fechaServicio</b><br><br>        ''',
+        <i>Se vence el:</i> <b>$fechaServicio</b><br><br>        ''',
         htmlFormatBigText: true,
         contentTitle: '<b>$titulo</b>',
         htmlFormatContentTitle: true,

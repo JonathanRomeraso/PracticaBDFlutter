@@ -199,7 +199,9 @@ class _DetalleVentaScreenState extends State<DetalleVentaScreen> {
         if (didPop) return;
         final salir = await confirmarSalida(context, idsTemporales);
         if (salir) {
-          Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+          Navigator.of(
+            context,
+          ).pushNamedAndRemoveUntil('/home', (route) => false);
         }
       },
       child: Scaffold(

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:grouped_list/grouped_list.dart';
 import 'package:practica_tres/db/categorias_database.dart';
 import 'package:practica_tres/models/categoria.dart';
 import 'package:practica_tres/views/form_eliminar.dart';
@@ -125,55 +124,113 @@ class _CategoriasScreenState extends State<CategoriasScreen> {
       ),
       body:
           categorias.isEmpty
-              ? Center(child: Text('No hay productos o servicios'))
+              ? Center(child: Text('No hay Categorías disponibles'))
               : _listaProductosServicios(categorias),
     );
   }
 
   Widget _listaProductosServicios(List<Categoria> categorias) {
-    return GroupedListView<Categoria, String>(
-      elements: categorias,
-      groupBy: (categoria) => categoria.type,
-      groupComparator: (value1, value2) => value2.compareTo(value1),
-      itemComparator: (item1, item2) => item1.nombre.compareTo(item2.nombre),
-      order: GroupedListOrder.DESC,
-      useStickyGroupSeparators: true,
-      groupSeparatorBuilder:
-          (String value) => Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              value,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-          ),
-      itemBuilder: (context, categoria) {
-        return Card(
-          elevation: 8.0,
-          margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 20.0,
-              vertical: 10.0,
-            ),
-            leading: const Icon(Icons.category_rounded, color: Colors.blue),
-            title: Text(categoria.nombre),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
+    final grupos = <String, List<Categoria>>{};
+    for (var cat in categorias) {
+      grupos.putIfAbsent(cat.type, () => []).add(cat);
+    }
+
+    return ListView(
+      children:
+          grupos.entries.map((entry) {
+            entry.value.sort((a, b) => a.nombre.compareTo(b.nombre));
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.orange),
-                  onPressed: () => mostrarFormulario(categoria: categoria),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Center(
+                    child: Text(
+                      entry.key,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () => eliminarCategoria(categoria.id!),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children:
+                        entry.value.map((categoria) {
+                          return SizedBox(
+                            width: MediaQuery.of(context).size.width / 2 - 20,
+                            child: Card(
+                              elevation: 6,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            right: 8.0,
+                                          ),
+                                          child: const Icon(
+                                            Icons.category_rounded,
+                                            color: Colors.blue,
+                                          ),
+                                        ),
+                                        Flexible(
+                                          child: Text(
+                                            categoria.nombre,
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                          ),
+                                        ),                                       
+                                      ],
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.edit,
+                                            color: Colors.orange,
+                                          ),
+                                          onPressed:
+                                              () => mostrarFormulario(
+                                                categoria: categoria,
+                                              ),
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.delete,
+                                            color: Colors.red,
+                                          ),
+                                          onPressed:
+                                              () => eliminarCategoria(
+                                                categoria.id!,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                  ),
                 ),
               ],
-            ),
-          ),
-        );
-      },
+            );
+          }).toList(),
     );
   }
 }

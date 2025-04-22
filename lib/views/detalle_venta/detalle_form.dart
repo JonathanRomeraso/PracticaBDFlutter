@@ -56,13 +56,8 @@ class DetalleForm extends StatelessWidget {
           SizedBox(height: 16),
           DropdownButtonFormField<int>(
             value: categoriaSeleccionadaId,
-            items:
-                categorias.map((cat) {
-                  return DropdownMenuItem(
-                    value: cat.id,
-                    child: Text(cat.nombre),
-                  );
-                }).toList(),
+            items: _buildCategoriasAgrupadas(),
+            onChanged: onCategoriaChanged,
             decoration: InputDecoration(
               labelText: 'Categoría',
               border: OutlineInputBorder(
@@ -70,7 +65,6 @@ class DetalleForm extends StatelessWidget {
               ),
               prefixIcon: Icon(Icons.category_outlined),
             ),
-            onChanged: onCategoriaChanged,
           ),
           SizedBox(height: 12),
           DropdownButtonFormField<ProductoServicio>(
@@ -191,5 +185,75 @@ class DetalleForm extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  List<DropdownMenuItem<int>> _buildCategoriasAgrupadas() {
+    final productos =
+        categorias.where((c) => c.type == 'Producto').toList()
+          ..sort((a, b) => a.nombre.compareTo(b.nombre));
+    final servicios =
+        categorias.where((c) => c.type == 'Servicio').toList()
+          ..sort((a, b) => a.nombre.compareTo(b.nombre));
+
+    List<DropdownMenuItem<int>> items = [];
+
+    if (productos.isNotEmpty) {
+      items.add(
+        const DropdownMenuItem<int>(
+          enabled: false,
+          child: Text(
+            'Productos',
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.teal),
+          ),
+        ),
+      );
+      items.addAll(
+        productos.map(
+          (cat) => DropdownMenuItem(
+            value: cat.id,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Text(
+                cat.nombre,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (servicios.isNotEmpty) {
+      items.add(
+        const DropdownMenuItem<int>(
+          enabled: false,
+          child: Text(
+            'Servicios',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.pinkAccent,
+            ),
+          ),
+        ),
+      );
+      items.addAll(
+        servicios.map(
+          (cat) => DropdownMenuItem(
+            value: cat.id,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Text(
+                cat.nombre,
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return items;
   }
 }

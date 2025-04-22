@@ -67,17 +67,9 @@ class _BienesScreenState extends State<BienesScreen> {
                 ),
                 DropdownButtonFormField<int>(
                   value: categoriaSeleccionada,
-                  items:
-                      categorias
-                          .map(
-                            (cat) => DropdownMenuItem(
-                              value: cat.id,
-                              child: Text(cat.nombre),
-                            ),
-                          )
-                          .toList(),
+                  items: _buildCategoriasAgrupadas(),
                   onChanged: (value) => categoriaSeleccionada = value,
-                  decoration: InputDecoration(labelText: 'Categoría'),
+                  decoration: const InputDecoration(labelText: 'Categoría'),
                 ),
               ],
             ),
@@ -209,10 +201,14 @@ class _BienesScreenState extends State<BienesScreen> {
       final categoriaNombre = nombreCategoria(prod.categoriaId);
       productosPorCategoria.putIfAbsent(categoriaNombre, () => []).add(prod);
     }
-
-    return productosPorCategoria.entries.map((entry) {
+    final categoriasOrdenadas =
+        productosPorCategoria.entries.toList()
+          ..sort((a, b) => a.key.compareTo(b.key));
+    return categoriasOrdenadas.map((entry) {
       final categoria = entry.key;
       final productos = entry.value;
+
+      productos.sort((a, b) => a.nombre.compareTo(b.nombre));
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -230,7 +226,7 @@ class _BienesScreenState extends State<BienesScreen> {
               crossAxisCount: 2,
               mainAxisSpacing: 8,
               crossAxisSpacing: 8,
-              childAspectRatio: 1.5,
+              childAspectRatio: 1.35,
             ),
             itemBuilder: (context, i) {
               final prod = productos[i];
@@ -240,7 +236,7 @@ class _BienesScreenState extends State<BienesScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Center(
                         child: Text(
@@ -249,6 +245,8 @@ class _BienesScreenState extends State<BienesScreen> {
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
                           ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -256,6 +254,8 @@ class _BienesScreenState extends State<BienesScreen> {
                         child: Text(
                           'Precio: \$${prod.precio.toStringAsFixed(2)}',
                           style: TextStyle(fontSize: 16),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
                         ),
                       ),
                       Row(
@@ -318,5 +318,77 @@ class _BienesScreenState extends State<BienesScreen> {
     if (confirm == true) {
       eliminarProducto(id);
     }
+  }
+
+  List<DropdownMenuItem<int>> _buildCategoriasAgrupadas() {
+    final productos =
+        categorias.where((c) => c.type == 'Producto').toList()
+          ..sort((a, b) => a.nombre.compareTo(b.nombre));
+    final servicios =
+        categorias.where((c) => c.type == 'Servicio').toList()
+          ..sort((a, b) => a.nombre.compareTo(b.nombre));
+
+    List<DropdownMenuItem<int>> items = [];
+
+    if (productos.isNotEmpty) {
+      items.add(
+        const DropdownMenuItem<int>(
+          enabled: false,
+          child: Text(
+            'Productos',
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.teal),
+          ),
+        ),
+      );
+      items.addAll(
+        productos.map(
+          (cat) => DropdownMenuItem(
+            value: cat.id,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Text(
+                cat.nombre,
+                style: const TextStyle(fontSize: 12),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (servicios.isNotEmpty) {
+      items.add(
+        const DropdownMenuItem<int>(
+          enabled: false,
+          child: Text(
+            'Servicios',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.pinkAccent,
+            ),
+          ),
+        ),
+      );
+      items.addAll(
+        servicios.map(
+          (cat) => DropdownMenuItem(
+            value: cat.id,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Text(
+                cat.nombre,
+                style: const TextStyle(fontSize: 12),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return items;
   }
 }

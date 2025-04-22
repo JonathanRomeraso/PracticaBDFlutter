@@ -312,7 +312,7 @@ class _HoomeScreenState extends State<HoomeScreen> {
                         itemBuilder:
                             (_) => [
                               PopupMenuItem(
-                                value: 'Por Cumplir',
+                                value: 'Por cumplir',
                                 child: Text('Por Cumplir'),
                               ),
                               PopupMenuItem(
