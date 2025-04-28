@@ -3,6 +3,9 @@ import 'package:practica_tres/db/categorias_database.dart';
 import 'package:practica_tres/db/productos_servicios_database.dart';
 import 'package:practica_tres/models/categoria.dart';
 import 'package:practica_tres/models/producto_servicio.dart';
+import 'package:practica_tres/views/form_eliminar.dart';
+import 'package:top_snackbar_flutter/custom_snack_bar.dart';
+import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
 class BienesScreen extends StatefulWidget {
   const BienesScreen({super.key});
@@ -118,8 +121,21 @@ class _BienesScreenState extends State<BienesScreen> {
   }
 
   Future<void> eliminarProducto(int id) async {
-    await repo.delete(id);
-    cargarTodo();
+    final puedeEliminar = await repo.puedeEliminarProducto(id);
+
+    if (puedeEliminar) {
+      if (await formEliminar(context, "este producto/servicio")) {
+        await repo.delete(id);
+        cargarTodo();
+      }
+    } else {
+      showTopSnackBar(
+        Overlay.of(context),
+        CustomSnackBar.error(
+          message: "No se puede eliminar este producto, tiene ventas asociadas",
+        ),
+      );
+    }
   }
 
   String nombreCategoria(int id) {
@@ -276,7 +292,7 @@ class _BienesScreenState extends State<BienesScreen> {
                               size: 20,
                             ),
                             onPressed: () {
-                              formEliminar(prod.id!);
+                              eliminarProducto(prod.id!);
                             },
                           ),
                         ],
@@ -291,33 +307,6 @@ class _BienesScreenState extends State<BienesScreen> {
         ],
       );
     }).toList();
-  }
-
-  Future<void> formEliminar(int id) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder:
-          (_) => AlertDialog(
-            title: const Text('Confirmar eliminación'),
-            content: const Text('¿Deseas eliminar este producto/servicio?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancelar'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text(
-                  'Eliminar',
-                  style: TextStyle(color: Colors.red),
-                ),
-              ),
-            ],
-          ),
-    );
-    if (confirm == true) {
-      eliminarProducto(id);
-    }
   }
 
   List<DropdownMenuItem<int>> _buildCategoriasAgrupadas() {

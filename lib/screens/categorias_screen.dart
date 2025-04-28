@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:practica_tres/db/categorias_database.dart';
 import 'package:practica_tres/models/categoria.dart';
 import 'package:practica_tres/views/form_eliminar.dart';
+import 'package:top_snackbar_flutter/custom_snack_bar.dart';
+import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
 class CategoriasScreen extends StatefulWidget {
   const CategoriasScreen({super.key});
@@ -97,9 +99,21 @@ class _CategoriasScreenState extends State<CategoriasScreen> {
   }
 
   Future<void> eliminarCategoria(int id) async {
-    if (await formEliminar(context, "esta Categoría")) {
-      await category.delete(id);
-      cargarCategorias();
+    final puedeEliminar = await category.puedeEliminarCategoria(id);
+
+    if (puedeEliminar) {
+      if (await formEliminar(context, "esta Categoría")) {
+        await category.delete(id);
+        cargarCategorias();
+      }
+    } else {
+      showTopSnackBar(
+        Overlay.of(context),
+        CustomSnackBar.error(
+          message:
+              "No se puede eliminar esta categoría, tiene productos asociados",
+        ),
+      );
     }
   }
 
@@ -191,7 +205,7 @@ class _CategoriasScreenState extends State<CategoriasScreen> {
                                             overflow: TextOverflow.ellipsis,
                                             maxLines: 1,
                                           ),
-                                        ),                                       
+                                        ),
                                       ],
                                     ),
                                     Row(

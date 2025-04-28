@@ -12,7 +12,9 @@ class ProductosServiciosDatabase {
   Future<List<ProductoServicio>> getAll() async {
     final con = await db.database;
     final res = await con.query('ProductosServicios');
-    return res.map((productoServicio) => ProductoServicio.fromMap(productoServicio)).toList();
+    return res
+        .map((productoServicio) => ProductoServicio.fromMap(productoServicio))
+        .toList();
   }
 
   Future<int> update(Map<String, dynamic> producto) async {
@@ -32,5 +34,15 @@ class ProductosServiciosDatabase {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  Future<bool> puedeEliminarProducto(int productoId) async {
+    final con = await db.database;
+    final result = await con.query(
+      'DetalleVentaServicio',
+      where: 'productoServicioId = ?',
+      whereArgs: [productoId],
+    );
+    return result.isEmpty;
   }
 }

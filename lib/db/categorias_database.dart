@@ -1,7 +1,6 @@
 import 'package:practica_tres/db/connection/connection_database.dart';
 import 'package:practica_tres/models/categoria.dart';
 
-
 class CategoriasDatabase {
   final db = ConnectionDatabase();
 
@@ -30,4 +29,15 @@ class CategoriasDatabase {
     final con = await db.database;
     return await con.delete('Categorias', where: 'id = ?', whereArgs: [id]);
   }
+
+  Future<bool> puedeEliminarCategoria(int categoriaId) async {
+    final con = await db.database;
+    final result = await con.query(
+      'ProductosServicios',
+      where: 'categoriaId = ?',
+      whereArgs: [categoriaId],
+    );
+    return result.isEmpty;
+  }
+
 }
