@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:practica_tres/db/venta_servicio_database.dart';
 import 'package:practica_tres/models/ventas_servicio.dart';
+import 'package:practica_tres/services/notification_service.dart';
 import 'package:practica_tres/views/form_eliminar.dart';
 import 'package:practica_tres/views/home/calendar_modal.dart';
 import 'package:practica_tres/views/home/eventos_modal.dart';
@@ -94,6 +95,25 @@ class _HoomeScreenState extends State<HoomeScreen> {
                 await repo.insert(nuevaVenta.toMap());
               } else {
                 await repo.update(nuevaVenta.toMap());
+
+                DateTime fecha = DateTime.parse(nuevaVenta.fecha);
+                DateTime recordatorio2DiasAntes = DateTime(
+                  fecha.year,
+                  fecha.month,
+                  fecha.day - 2,
+                  DateTime.now().hour,
+                  DateTime.now().minute + 1,
+                  DateTime.now().second + 5,
+                );
+                if (recordatorio2DiasAntes.isAfter(DateTime.now())) {
+                  await notificationProgramada(
+                    recordatorio2DiasAntes,
+                    nuevaVenta.titulo,
+                    nuevaVenta.descripcion,
+                    nuevaVenta.nombreCliente,
+                    fecha.toLocal().toString().split(' ')[0],
+                  );
+                }
               }
               cargarVentas();
             },

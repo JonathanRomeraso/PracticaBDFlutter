@@ -29,6 +29,11 @@ class VentaServicioDatabase {
 
   Future<int> delete(int id) async {
     final con = await db.database;
+    await con.delete(
+      'DetalleVentaServicio',
+      where: 'ventaServicioId = ?',
+      whereArgs: [id],
+    );
     return await con.delete(
       'VentasServicios',
       where: 'id = ?',
